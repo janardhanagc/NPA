@@ -1,3 +1,5 @@
+----------------------------- NOT MODIFIED SINCE 22nd APRIL --------------------------
+
 # NPA
 ## Jitter Calculation:
 inputs : host, filename, query, tz, outputfile
