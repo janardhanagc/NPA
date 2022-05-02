@@ -6,7 +6,7 @@ import Lacp_MUX
 from main import NPA
 from Interface import *
 from pcapfile import savefile
-
+import logging as log
 
 class LacpNPA(NPA):
 
@@ -29,6 +29,7 @@ class LacpNPA(NPA):
         self.take_input()
         tz = pytz.timezone(self.time_zone)
         pkts = scapy.rdpcap(self.pcap_file)
+        log.info("Reading file - {}".format(self.pcap_file))
         testcap = open(self.pcap_file, 'rb')
         capfile = savefile.load_savefile(testcap, verbose=True)
 
