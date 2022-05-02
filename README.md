@@ -4,7 +4,7 @@
 ## Jitter Calculation:
 inputs : host, filename, query, tz, outputfile
   1. Host is list of MAC IDs of interfaces at which jitter is to be calculated
-  2. filename is .pcap file address which is to be processed for jitter calculation
+  2. filename is .pcap file addr   ess which is to be processed for jitter calculation
   3. query : 1 - indicates full descriptive analysis, 0 - indicates summary
   4. tz: timezone where .pcap file is captured
   5. outputfile: name of the log file where output is to be written
