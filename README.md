@@ -1,7 +1,48 @@
 ----------------------------- NOT MODIFIED SINCE 22nd APRIL --------------------------
 
 # NPA
-## Jitter Calculation:
+
+## Interface
+The class Interface provides attributes of port i.e mac ID, last sent packet, last received packet,
+last packet sent time, last packet received time.</br>
+The class LacpInterface which inherets from class Interface provides extra attributes related to LACP
+protocol i.e port number, actor and partner timeouts, MUX machine running in each interface, defaulted status,etc
+
+## LACP
+The class LACP has following functions:</br>
+_take_input_ function stores the information like .pcap file path, list of interfaces to be analyzed, 
+type of output (summary / details) needed, timezone where packets are captured.
+
+_run_analyzer_ function reads packet one by one and invokes Rx_Tx machine and MUX machine for analyzing packets.
+
+
+## Lacp_Rx_Tx_Sm
+
+The following are the important functions present:
+
+    check_tx_time_out
+    check_rx_time_out
+    validate_tx_packet
+    run_tx_sm
+    run_rx_sm
+    run_rx_tx_sm
+
+_check_tx_time_out_ function calculates the time difference between current time and last packet sent time of all
+interfaces and reports if any interface timeouts in between. </br>
+_check_rx_time_out_ function does same as Tx time out but with last packet received time.</br>
+_validate_tx_packet_ function compares the actor state received and expected value determined by mux machine states and
+reports error if mismatch is found. </br>
+_run_tx_sm_ function is invoked only when a packet is sent from interface. It calculates the jitter, logs value of last
+packet sent time and current time based on query requested by user. </br>
+_run_rx_sm_ function is invoked only when a packet is received by interface. It does same jitter calculation function.</br>
+
+## Lacp_MUX
+
+
+
+
+
+
 inputs : host, filename, query, tz, outputfile
   1. Host is list of MAC IDs of interfaces at which jitter is to be calculated
   2. filename is .pcap file addr   ess which is to be processed for jitter calculation

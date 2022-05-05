@@ -57,10 +57,12 @@ def get_PDU(p):
         printed = printed + LACPDU[j][0] * 3
     return PDU
 
+
 def print_PDU_info(p): # p means packet
     PDU=get_PDU(p)
     for j in PDU:
         print(j,": ",PDU[j])
+
 
 def get_actor_state(p):
     state=get_PDU(p)['Actor_state']
@@ -92,44 +94,61 @@ def print_partner_state(p):
     for bit in state:
         print(bit, ':', state_values[bit][state[bit]])
 
-def get_sender_address(p):
+def get_src_eth_mac(p):
     p=scapy.hexstr(p)
     if (p[36:48] == '81 00 00 01 '):  # ignoring 802.1q header
         p = p[:37] + p[49:372]
     p=p[6*3:6*3+17]
     return p
 
+
 def validate_packet(p):
-    flag=True
+    flag = True
 
     if (get_PDU(p)['type']!= '88 09'):
-        log.error('Protocol type is modified to {}'.format(get_PDU(p)['type']))
+        log.error("Protocol type is not '0x8809', but '0x{}'".format(get_PDU(p)['type']))
         flag = False
 
     if (get_PDU(p)['subtype']!= '01'):
-        log.error('Protocol subtype is modified to {}'.format(get_PDU(p)['subtype']))
+        log.error("Protocol subtype is not '01', but '{}'".format(get_PDU(p)['subtype']))
         flag = False
 
     if (get_PDU(p)['Version_number']!= '01'):
-        log.error('Protocol version number is modified to {}'.format(get_PDU(p)['Version_number']))
+        log.error("Protocol version number is not '01', but '{}'".format(get_PDU(p)['Version_number']))
         flag = False
 
     if(get_PDU(p)['Actor_TLV_type']!='01'):
-        log.error('Actor_TLV_type is modified to {}'.format(get_PDU(p)['Actor_TLV_type']))
+        log.error("Actor_TLV_type is not '01', but '{}'".format(get_PDU(p)['Actor_TLV_type']))
         flag=False
 
     if (get_PDU(p)['Actor_information_length']!= '14'):
-        log.error('Actor_information_length is modified to {}'.format(get_PDU(p)['Actor_information_length']))
+        log.error("Actor_information_length is not '0x14', but '0x{}'".format(get_PDU(p)['Actor_information_length']))
         flag = False
 
     if (get_PDU(p)['Partner_TLV_type']!= '02'):
-        log.error('Partner_TLV_type is modified to {}'.format(get_PDU(p)['Partner_TLV_type']))
+        log.error("Partner_TLV_type is not '0x02', but '{}'".format(get_PDU(p)['Partner_TLV_type']))
         flag = False
 
     if (get_PDU(p)['Partner_information_length']!= '14'):
-        log.error('Partner_information_length is modified to {}'.format(get_PDU(p)['Partner_information_length']))
+        log.error("Partner_information_length is not '0x14', but '0x{}'".format(get_PDU(p)['Partner_information_length']))
         flag = False
     return flag
 
+
+def is_of_interest(pkt, index, interfaces):
+
+    if validate_packet(pkt) is False:
+        log.error("Packet no. : {} - Not valid LACP packet to process further, packet ignored".format(index+1))
+        return False
+
+    for interface in interfaces:
+        if get_src_eth_mac(pkt) == interface.mac:
+            return True
+        elif get_PDU(pkt)['Partner_port'] == interface.port and interface.port != '':
+            return True
+        elif get_src_eth_mac(pkt) == interface.partnerMac and interface.partnerMac != '':
+            return True
+    log.debug("Packet no. : {} is of not interest, packet ignored".format(index+1))
+    return False
 
 

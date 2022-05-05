@@ -18,8 +18,8 @@ if __name__ == '__main__':
     #filename="/Users/jgowdac/multi.pcap"
     #jitter_query=input('Do you require detailed analysis or summary on Jitter ?(Y for details, N for summary): ' )
 
-    logging.basicConfig(filename='multiple_jitter.log', level=logging.DEBUG, format='%(levelname)s - %(message)s')
-    logging.debug("Starting...")
+    logging.basicConfig(filename='output.log', level=logging.DEBUG, format='%(levelname)s - %(message)s')
+    logging.debug("Initializing...")
     npa = LacpNPA()
     logging.debug("Starting Analyzer")
     npa.run_analyzer()

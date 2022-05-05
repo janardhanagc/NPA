@@ -1,31 +1,31 @@
 DEBUG - Initializing...
 DEBUG - Starting Analyzer
-INFO - Reading file - /Users/jgowdac/Documents/PCAP FILES/Timestamp shifted/lacp_copy_ts_2.pcap
+DEBUG - Reading file - /Users/jgowdac/Documents/PCAP FILES/Timestamp shifted/lacp_copy_ts.pcap
 INFO - Tx - 1C 6A 7A 1F 1D 7F : packet no. : 1 - 1st packet sent at 18-02-22 19:11:02.455501
 INFO - MUX - packet sent from 1C 6A 7A 1F 1D 7F
 INFO - 1C 6A 7A 1F 1D 7F : Actor was in detached state
 PDU info:
   actor state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 0, 'time_out': 1, 'aggregation': 0, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-INFO - Selected may be SELECTED or STANDBY, moving to waiting
-INFO - Wait while Timer started
-INFO - Actor is in waiting
+INFO - Actor is in detached state
 DEBUG - ------------------------------------------------------------------------------------------------------
 INFO - Rx - 1C 6A 7A 1F 1D 7F : packet no. : 2 - 1st packet received at 18-02-22 19:11:02.456117
 INFO - MUX - packet received in 1C 6A 7A 1F 1D 7F
-INFO - 1C 6A 7A 1F 1D 7F : Actor was in waiting state
+INFO - 1C 6A 7A 1F 1D 7F : Actor was in detached state
 PDU info:
   actor state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
+INFO - Selected may be SELECTED or STANDBY, moving to waiting
+INFO - Wait while Timer started
 INFO - Actor is in waiting state
 DEBUG - ------------------------------------------------------------------------------------------------------
-INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 INFO - Tx - 1C 6A 7A 1F 1D 7F : packet no. : 3 - previous packet sent at 18-02-22 19:11:02.455501
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 3 - current packet sent at 18-02-22 19:11:02.456832
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 3 - Jitter: 0.0013 
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 3 - partner expected new packet at every 1 second interval
 INFO - MUX - packet sent from 1C 6A 7A 1F 1D 7F
+INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
+INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 INFO - 1C 6A 7A 1F 1D 7F : Actor was in waiting state
 PDU info:
   actor state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
@@ -35,7 +35,7 @@ DEBUG - Partner_system_ID changed from 00 00 00 00 00 00 to AC 3A 67 0D CC D7
 DEBUG - Partner_key changed from 00 00 to 00 09
 DEBUG - Partner_port_priority changed from 00 00 to 80 00
 DEBUG - Partner_port changed from 00 00 to 01 21
-INFO - Actor is in waiting
+INFO - Actor is in waiting state
 DEBUG - ------------------------------------------------------------------------------------------------------
 INFO - Rx - 1C 6A 7A 1F 1D 7F : packet no. : 4 - previous packet received at 18-02-22 19:11:02.456117
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 4 - current packet received at 18-02-22 19:11:03.457744
@@ -48,29 +48,28 @@ PDU info:
 partner state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 INFO - Actor is in waiting state
 DEBUG - ------------------------------------------------------------------------------------------------------
-WARNING - Tx - 1C 6A 7A 1F 1D 7F : packet not sent in last 2 timeout(2*1s)
-INFO - Tx - 1C 6A 7A 1F 1D 7F : previous packet sent at 18-02-22 19:11:02.456832, current time is 18-02-22 19:11:05.258972
-ERROR - Unexpected packet sent
-INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
+WARNING - Tx - 1C 6A 7A 1F 1D 7F : previous packet sent at 18-02-22 19:11:02.456832, packet not sent in last 2 timeout(2*1s)
 INFO - Tx - 1C 6A 7A 1F 1D 7F : packet no. : 5 - previous packet sent at 18-02-22 19:11:02.456832
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 5 - current packet sent at 18-02-22 19:11:05.258972
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 5 - Jitter: 2.8021 
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 5 - partner expected new packet at every 1 second interval
 INFO - MUX - packet sent from 1C 6A 7A 1F 1D 7F
+ERROR - Unexpected packet sent
+INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
+INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 INFO - 1C 6A 7A 1F 1D 7F : Actor was in waiting state
 PDU info:
   actor state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-ERROR - Actor selected is UNSELECTED or STANDBY
+ERROR - Actor was in WAITING state, despite wait_while_timer expired, actor synchronization is False.
+ Actor selected might be UNSELECTED or STANDBY, so actor is moved to DETACHED state
 INFO - Detach_Mux_From_Aggregator
 INFO - Disable_Distributing
 INFO - Disable_Collecting
 INFO - Need To Transmit is TRUE
-INFO - Actor is in detached
+INFO - Actor is in detached state
 DEBUG - ------------------------------------------------------------------------------------------------------
-WARNING - Rx - 1C 6A 7A 1F 1D 7F : packet not received in last 2 timeout(2*1s)
-INFO - Rx - 1C 6A 7A 1F 1D 7F : previous packet received at 18-02-22 19:11:03.457744, current time is 18-02-22 19:11:06.256685
+WARNING - Rx - 1C 6A 7A 1F 1D 7F : previous packet received at 18-02-22 19:11:03.457744, packet not received in last 2 timeout(2*1s)
 INFO - Rx - 1C 6A 7A 1F 1D 7F : packet no. : 6 - previous packet received at 18-02-22 19:11:03.457744
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 6 - current packet received at 18-02-22 19:11:06.256685
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 6 - Jitter: 2.7989 
@@ -80,97 +79,105 @@ INFO - 1C 6A 7A 1F 1D 7F : Actor was in detached state
 PDU info:
   actor state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-INFO - Actor is in detached state
+INFO - Selected may be SELECTED or STANDBY, moving to waiting
+INFO - Wait while Timer started
+INFO - Actor is in waiting state
 DEBUG - ------------------------------------------------------------------------------------------------------
-ERROR - Unexpected packet sent
-INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 INFO - Tx - 1C 6A 7A 1F 1D 7F : packet no. : 7 - previous packet sent at 18-02-22 19:11:05.258972
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 7 - current packet sent at 18-02-22 19:11:06.258208
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 7 - Jitter: 0.9992 
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 7 - partner expected new packet at every 1 second interval
 INFO - MUX - packet sent from 1C 6A 7A 1F 1D 7F
-INFO - 1C 6A 7A 1F 1D 7F : Actor was in detached state
+ERROR - Unexpected packet sent
+INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
+INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
+INFO - 1C 6A 7A 1F 1D 7F : Actor was in waiting state
 PDU info:
   actor state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-INFO - Selected may be SELECTED or STANDBY, moving to waiting
-INFO - Wait while Timer started
-INFO - Actor is in waiting
+ERROR - wait_while_timer not yet expired, actor unexpectedly moved to attached state
+INFO - Attach_Mux_To_Aggregator
+INFO - Disable_Collecting
+INFO - Need to Transmit is TRUE
+INFO - Actor is in attached state
 DEBUG - ------------------------------------------------------------------------------------------------------
 INFO - Rx - 1C 6A 7A 1F 1D 7F : packet no. : 8 - previous packet received at 18-02-22 19:11:06.256685
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 8 - current packet received at 18-02-22 19:11:06.274974
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 8 - Jitter: 0.0183 
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 8 - partner expected new packet at every 1 second interval
 INFO - MUX - packet received in 1C 6A 7A 1F 1D 7F
-INFO - 1C 6A 7A 1F 1D 7F : Actor was in waiting state
+INFO - 1C 6A 7A 1F 1D 7F : Actor was in attached state
 PDU info:
   actor state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-ERROR - Partner cannot move to collecting state when Actor is Out of Sync
-INFO - Partner state:
-INFO - Actor state:
-INFO - Actor is in waiting state
+INFO - Actor is in ATTACHED state and partner becomes IN SYNC. So, Actor moving to COLLECTING state
+INFO - Enable_collecting
+INFO - Disable_Distributing
+INFO - Need to Transmit is TRUE
+INFO - Actor is in collecting state
 DEBUG - ------------------------------------------------------------------------------------------------------
-ERROR - Tx - 1C 6A 7A 1F 1D 7F : packet not sent in last 3 timeout(3*1s)
-INFO - Tx - 1C 6A 7A 1F 1D 7F : previous packet sent at 18-02-22 19:11:06.258208, current time is 18-02-22 19:11:09.436102
-ERROR - Rx - 1C 6A 7A 1F 1D 7F : packet not received in last 3 timeout(3*1)s
-INFO - Rx - 1C 6A 7A 1F 1D 7F : previous packet received at 18-02-22 19:11:06.274974, current time is 18-02-22 19:11:09.436102
-ERROR - Actor state is Defaulted and selected may be UNSELECTED
+ERROR - Tx - 1C 6A 7A 1F 1D 7F : previous packet sent at 18-02-22 19:11:06.258208, packet not sent in last 3 timeout(3*1s)
+ERROR - Rx - 1C 6A 7A 1F 1D 7F : previous packet received at 18-02-22 19:11:06.274974, packet not received in last 3 timeout(3*1)s
+ERROR - Actor state is Defaulted and selected is UNSELECTED
+ERROR - Actor moving back to attached state
+INFO - Attach_Mux_To_Aggregator
+INFO - Disable_Collecting
+INFO - Need to Transmit is TRUE
+ERROR - Actor moving back to detached state
 INFO - Detach_Mux_From_Aggregator
 INFO - Disable_Distributing
 INFO - Disable_Collecting
 INFO - Need To Transmit is TRUE
-ERROR - Unexpected packet sent
-INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 1, 'expired': 0}
-INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 INFO - Tx - 1C 6A 7A 1F 1D 7F : packet no. : 9 - previous packet sent at 18-02-22 19:11:06.258208
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 9 - current packet sent at 18-02-22 19:11:09.436102
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 9 - Jitter: 3.1779 
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 9 - partner expected new packet at every 1 second interval
 INFO - MUX - packet sent from 1C 6A 7A 1F 1D 7F
+ERROR - Unexpected packet sent
+INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 1, 'expired': 0}
+INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 INFO - 1C 6A 7A 1F 1D 7F : Actor was in detached state
 PDU info:
   actor state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-INFO - Selected may be SELECTED or STANDBY, moving to waiting
-INFO - Wait while Timer started
-INFO - Actor is in waiting
+INFO - Actor is in detached state
 DEBUG - ------------------------------------------------------------------------------------------------------
 INFO - Rx - 1C 6A 7A 1F 1D 7F : packet no. : 10 - previous packet received at 18-02-22 19:11:06.274974
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 10 - current packet received at 18-02-22 19:11:09.454129
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 10 - Jitter: 3.1792 
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 10 - partner expected new packet at every 1 second interval
 INFO - MUX - packet received in 1C 6A 7A 1F 1D 7F
-INFO - 1C 6A 7A 1F 1D 7F : Actor was in waiting state
+INFO - 1C 6A 7A 1F 1D 7F : Actor was in detached state
 PDU info:
   actor state : {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
 ERROR - Partner cannot move to collecting state when Actor is Out of Sync
-INFO - Partner state:
-INFO - Actor state:
+INFO - Partner state: {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
+INFO - Actor state: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
 ERROR - Partner cannot move to distributing state when Actor is not collecting
 INFO - Partner state:
 INFO - Actor state:
+INFO - Selected may be SELECTED or STANDBY, moving to waiting
+INFO - Wait while Timer started
 INFO - Actor is in waiting state
 DEBUG - ------------------------------------------------------------------------------------------------------
-WARNING - Actor time_out changed from short timeout to long timeout
-INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 1, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
 INFO - Tx - 1C 6A 7A 1F 1D 7F : packet no. : 11 - previous packet sent at 18-02-22 19:11:09.436102
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 11 - current packet sent at 18-02-22 19:11:09.460945
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 11 - Jitter: 0.0248 
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 11 - partner expected new packet at every 30 second interval
 INFO - MUX - packet sent from 1C 6A 7A 1F 1D 7F
+ERROR - Unexpected packet sent
+INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 0, 'collecting': 0, 'distributing': 0, 'defaulted': 0, 'expired': 0}
+INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
 INFO - 1C 6A 7A 1F 1D 7F : Actor was in waiting state
 PDU info:
   actor state : {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
-INFO - Actor Ready is True
+ERROR - wait_while_timer not yet expired, actor unexpectedly moved to attached state
 INFO - Attach_Mux_To_Aggregator
 INFO - Disable_Collecting
 INFO - Need to Transmit is TRUE
-INFO - Actor is in attached
+INFO - Actor is in attached state
 DEBUG - ------------------------------------------------------------------------------------------------------
 INFO - Rx - 1C 6A 7A 1F 1D 7F : packet no. : 12 - previous packet received at 18-02-22 19:11:09.454129
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 12 - current packet received at 18-02-22 19:11:10.455555
@@ -184,29 +191,27 @@ partner state : {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronizatio
 ERROR - Partner cannot move to distributing state when Actor is not collecting
 INFO - Partner state:
 INFO - Actor state:
-INFO - Partner.sync is TRUE
+INFO - Actor is in ATTACHED state and partner becomes IN SYNC. So, Actor moving to COLLECTING state
 INFO - Enable_collecting
 INFO - Disable_Distributing
 INFO - Need to Transmit is TRUE
 INFO - Actor is in collecting state
 DEBUG - ------------------------------------------------------------------------------------------------------
-WARNING - Tx - 1C 6A 7A 1F 1D 7F : packet not sent in last 2 timeout(2*30s)
-INFO - Tx - 1C 6A 7A 1F 1D 7F : previous packet sent at 18-02-22 19:11:09.460945, current time is 18-02-22 19:12:24.666698
-WARNING - Rx - 1C 6A 7A 1F 1D 7F : packet not received in last 2 timeout(2*30s)
-INFO - Rx - 1C 6A 7A 1F 1D 7F : previous packet received at 18-02-22 19:11:10.455555, current time is 18-02-22 19:12:24.666698
-ERROR - Unexpected packet sent
-INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 0, 'defaulted': 0, 'expired': 0}
-INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
+WARNING - Tx - 1C 6A 7A 1F 1D 7F : previous packet sent at 18-02-22 19:11:09.460945, packet not sent in last 2 timeout(2*30s)
+WARNING - Rx - 1C 6A 7A 1F 1D 7F : previous packet received at 18-02-22 19:11:10.455555, packet not received in last 2 timeout(2*30s)
 INFO - Tx - 1C 6A 7A 1F 1D 7F : packet no. : 13 - previous packet sent at 18-02-22 19:11:09.460945
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 13 - current packet sent at 18-02-22 19:12:24.666698
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 13 - Jitter: 75.2058 
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 13 - partner expected new packet at every 30 second interval
 INFO - MUX - packet sent from 1C 6A 7A 1F 1D 7F
+ERROR - Unexpected packet sent
+INFO - Tx - 1C 6A 7A 1F 1D 7F : Actor state expected to be sent: {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 0, 'defaulted': 0, 'expired': 0}
+INFO - Tx - 1C 6A 7A 1F 1D 7F :         Actor state actual sent: {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
 INFO - 1C 6A 7A 1F 1D 7F : Actor was in collecting state
 PDU info:
   actor state : {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
-INFO - Actor is in collecting
+INFO - Actor is in collecting state
 DEBUG - ------------------------------------------------------------------------------------------------------
 INFO - Rx - 1C 6A 7A 1F 1D 7F : packet no. : 14 - previous packet received at 18-02-22 19:11:10.455555
 INFO -    1C 6A 7A 1F 1D 7F : packet no. : 14 - current packet received at 18-02-22 19:12:25.657231
@@ -217,7 +222,7 @@ INFO - 1C 6A 7A 1F 1D 7F : Actor was in collecting state
 PDU info:
   actor state : {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
 partner state : {'activity': 1, 'time_out': 0, 'aggregation': 1, 'synchronization': 1, 'collecting': 1, 'distributing': 1, 'defaulted': 0, 'expired': 0}
-INFO - Partner.collecting is TRUE
+INFO - Actor is in COLLECTING state and partner collecting becomes enabled. So, Actor moving to DISTRIBUTING state
 INFO - Enable_Distributing
 INFO - Actor is in distributing state
 DEBUG - ------------------------------------------------------------------------------------------------------
