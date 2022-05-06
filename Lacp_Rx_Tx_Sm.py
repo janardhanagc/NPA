@@ -3,7 +3,7 @@ import logging as log
 from datetime import datetime
 from Interface import *
 
-rx_timer_list = set()   # comment - not used anywhere
+rx_timer_list = set()   # not used anywhere
 tx_timer_list = set()
 
 global TZ
@@ -19,7 +19,7 @@ def timer_list_remove(timer_list, interface):
     timer_list.remove(interface)
 
 
-def check_tx_time_out(current_time):
+def check_tx_time_out(current_time):  # called to check timeout at Tx
     to_be_removed = list()
     for interface in tx_timer_list:
         if (interface.last_sent_time != 0) and (current_time-interface.last_sent_time > 3*interface.partner_timeout):
@@ -33,11 +33,11 @@ def check_tx_time_out(current_time):
                 'Tx - {} : previous packet sent at {}, packet not sent in last 2 timeout(2*{}s)'.format(
                     interface.mac, ts_to_str(interface.last_sent_time), interface.partner_timeout))
 
-    for interface in to_be_removed:
-        timer_list_remove(tx_timer_list, interface)
+    for interface in to_be_removed:  # interfaces whose error is already reported are suspended temporarily from
+        timer_list_remove(tx_timer_list, interface)         # checking timeout till new packet sent
 
 
-def check_rx_time_out(current_time, interfaces):
+def check_rx_time_out(current_time, interfaces):   # called to check timeout at Rx
     alive_interfaces = [interface for interface in interfaces if interface.mux_sm.actor_state['defaulted'] == 0]
     for interface in alive_interfaces:
         if (interface.last_received_time != 0) and (current_time-interface.last_received_time > 3*interface.actor_timeout):
@@ -116,6 +116,7 @@ def run_rx_sm(index, current_time_stamp, pkt, interfaces, detailed):
         interface.last_received_time = current_time_stamp
         interface.partner_timeout = periodic[list(periodic.keys())[time_out]]
         interface.mux_sm.actor_state['defaulted'] = 0
+        #interface.partnerMac = sender
         return
 
     interface.mux_sm.actor_state['defaulted'] = 0

@@ -70,7 +70,7 @@ class MuxMachine(sm.StateMachine):
         self.actor_state['distributing'] = 1
         log.info('Enable_Distributing')
 
-    def move_to_detached(self):
+    def move_to_detached(self):     # useful when defaulted and selected is UNSELECTED
         if self.is_distributing:
             log.error('Actor moving back to collecting state')
             self.to_collecting()
@@ -83,6 +83,27 @@ class MuxMachine(sm.StateMachine):
         if self.is_waiting:
             log.error('Actor moving back to detached state')
             self.to_detach()
+
+    def jump_to_state(self, actor_state):   # useful when pcap starts when actor in dist / col / attached state
+        log.info("Initializing Actor state.......")
+        if actor_state['distributing'] == 1:
+            if self.is_detached:
+                self.to_waiting()
+            self.to_attached()
+            self.to_collecting()
+            self.to_distributing()
+        elif actor_state['collecting'] == 1:
+            if self.is_detached:
+                self.to_waiting()
+            self.to_attached()
+            self.to_distributing()
+        elif actor_state['synchronization'] == 1:
+            if self.is_detached:
+                self.to_waiting()
+            self.to_attached()
+        self.actor_state = actor_state
+        self.Ready = True
+        log.info("Actor is initialized to {} state based on actor state of PDU sent".format(self.current_state.value))
 
 
 # reports any changes in actor or partner information present among last two packet sent / received
@@ -239,10 +260,11 @@ def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
     if LacPdu.is_of_interest(pkt, index, interfaces) is False:  # checks if packet is not sent or received by
         return                                                          # interfaces interested
 
+    sync_col_dist_check(pkt)      # checks possibility of corrupt of bits or invalid transition rule
     if LacPdu.get_src_eth_mac(pkt) in hostEthMacs:      # packet is sent from switch
         log.info('MUX - packet sent from {}'.format(LacPdu.get_src_eth_mac(pkt)))
         interface = find_int_mac(interfaces, LacPdu.get_src_eth_mac(pkt))
-        if interface is None:
+        if interface is None:     # This condition never encounters as hostEthMacs defined based on input hosts
             log.debug('packet sent, actor not found in interface inputs')
             return
 
@@ -255,6 +277,8 @@ def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
         if len(interface.mux_sm.actor_state) == 1:  # defaulted bit is initialized in LacpInterface class
             interface.mux_sm.actor_state = actor_state      # actor state is initialized if pkt is 1st packet sent
             interface.port = LacPdu.get_PDU(pkt)['Actor_port']
+            if actor_state['synchronization'] == 1:
+                interface.mux_sm.jump_to_state(actor_state)
         if len(interface.last_pdu_rx) != 0:        # checks if actor has modified any partner state information
             check_partner_info(LacPdu.get_actor_state(interface.last_pdu_rx), partner_state)
 
@@ -271,7 +295,7 @@ def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
         elif interface.mux_sm.is_waiting and actor_state['synchronization'] == 0:
             if interface.mux_sm.Ready is True:
                 log.error('Actor was in WAITING state, despite wait_while_timer expired, actor synchronization is False'
-                          '.\n Actor selected might be UNSELECTED or STANDBY, so actor is moved to DETACHED state')
+                          '.\nActor selected might be UNSELECTED or STANDBY, so actor is moved to DETACHED state')
                 interface.mux_sm.to_detach()
         elif interface.mux_sm.is_attached and actor_state['synchronization'] == 0:
             log.error('Actor was in ATTACHED state and actor synchronization becomes False.'
@@ -300,17 +324,17 @@ def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
         log.info('MUX - packet received in {}'.format(interface.mac))
         log.info('{} : Actor was in {} state\nPDU info:\n  actor state : {}\npartner state : {}'.format(interface.mac,
                                                     interface.mux_sm.current_state.value, partner_state, actor_state))
-        if interface.last_pdu_tx != '':
+        if interface.last_pdu_tx != '':   # enters the if block if interface has sent any packet before
             check_actor_info(LacPdu.get_actor_state(interface.last_pdu_tx), partner_state)
-        dependency_check(interface.mux_sm, pkt, 'received')
-        if len(interface.last_pdu_rx) != 0:
+            dependency_check(interface.mux_sm, pkt, 'received')
+        if len(interface.last_pdu_rx) != 0:  # enters the if block if interface has received any packet before
             detect_PDU_info_changes(LacPdu.get_PDU(interface.last_pdu_rx), LacPdu.get_PDU(pkt))
             interface.partner_state = partner_state
 
         if interface.mux_sm.is_detached and interface.selected == 'SELECTED':
             log.info('Selected may be SELECTED or STANDBY, moving to waiting')
             interface.mux_sm.to_waiting()
-            interface.mux_sm.wait_while_timer_stamp = interface.last_sent_time
+            interface.mux_sm.wait_while_timer_stamp = interface.last_received_time
             # current pkt time is updated as last_sent_time in Rx_Tx state machine
 
         elif interface.mux_sm.is_attached and actor_state['synchronization'] == 1:

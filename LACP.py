@@ -21,7 +21,7 @@ class LacpNPA(NPA):
 
     def take_input(self):
         # host is tuple in format (mac, partnerMac, port, partnerPort)
-        self.hosts = [('1C 6A 7A 1F 1D 7F', 'AC 3A 67 0D CC D7', '', '')]
+        self.hosts = [('1C 6A 7A 1F 1D 7F', '', '', '')]
         #self.hosts = [('AC 3A 67 0D CC D7',)]
         self.hostEthMacs=[]
         self.pcap_file = "/Users/jgowdac/Documents/PCAP FILES/Timestamp shifted/lacp_copy_ts.pcap"

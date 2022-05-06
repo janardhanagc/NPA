@@ -18,7 +18,7 @@ _run_analyzer_ function reads packet one by one and invokes Rx_Tx machine and MU
 
 ## Lacp_Rx_Tx_Sm
 
-The following are the important functions present:
+The following are the functions present:
 
     check_tx_time_out
     check_rx_time_out
@@ -36,59 +36,68 @@ _run_tx_sm_ function is invoked only when a packet is sent from interface. It ca
 packet sent time and current time based on query requested by user. </br>
 _run_rx_sm_ function is invoked only when a packet is received by interface. It does same jitter calculation function.</br>
 
-## Lacp_MUX
+LOGIC
+1. Using current packet time, timeout of actors are checked for TX
+	1. All the interfaces’ last_packet_sent time and current packet time are compared to find whether 
+		timeout happened or not, warning is made if necessary
+	2. Once timeout error reported, particular interface is suspended from further timeout checking till new
+		packet is sent out
+2. Using current packet time, timeout of actors are checked for RX
+	1. All the interfaces which are not defaulted are considered for comparison of last_packet_received
+	   time and current packet time to report errors
+	2. If found that actor not received any packet after 3 timeouts, interface is made defaulted and selected
+		will be made UNSELECTED
+
+3. Based on sender address, packet is classified as whether packet is sent or received
+4. If Packet is sent from one of the interfaces:
+	1. If current packet is first packet sent out, port number is recorded, last_sent_time is updated to 
+		current time and time_out value is recorded and jitter calculation is skipped
+	2. If user requested that report needed is of detailed, last_packet_timestamp, 		current_packet_timestamp, jitter is logged
+5. If packet is received from one of the interfaces:
+	1. Actual interface where packet is received is found from sender address, partner port of packet
+	2. If interface has not received any packet before, timeout is recorded, last_packet_received time is
+		updated to current time and interface is made not defaulted.
+	3. Jitter calculation is made and details of packet received	will be logged if user need detailed analysis.
 
 
+	
 
 
-
-
-inputs : host, filename, query, tz, outputfile
-  1. Host is list of MAC IDs of interfaces at which jitter is to be calculated
-  2. filename is .pcap file addr   ess which is to be processed for jitter calculation
-  3. query : 1 - indicates full descriptive analysis, 0 - indicates summary
-  4. tz: timezone where .pcap file is captured
-  5. outputfile: name of the log file where output is to be written
-
-FUNCTION:
-1. Calculate the jitter both in the sender side and receiver side of the interface with help of timestamp of packets.
-2. Report Timeouts (2 timeouts- warning) (3 timeouts-error) for each interface both in receiver and sender side.
-
+## Lacp_MUX:
 LOGIC:
-1. A class called Interface is defined which has attributes called MAC ID, port number, last packet sent time, received time, etc.
-    For each entry in input host list, an object of type Interface is created.
-2. A virtual clock will be running throughout the runtime of program starts from arrival of first packet
-3. A thread called Timeout will be running in every interface which constantly monitors the virtual clock and last sent or received packet time and
-    reports the violations accordingly.
-4. When very first packet sent or recevied encountered in .pcap file, attribute like port number, sent/received time  is updated with 
-    respective Interface objects.
-5. Jitter is calculated and reported if query is 1, the timeout thread is responsible for reporting violations and will be running continously.
+1. Use packet timestamp to run wait_while_timer and modify Ready
+2. Checks if packet is sent or received by interfaces under processing ( interested)
+3. Checks if packet is corrupt at sequence (sync-col-dist)
+4. Checks the direction of packet movement (sent or received)
+5. If packet is sent
+   1. find actual interface which sent 
+   2. if interface has sent any packets before, the actor state contents of new packet are validated to
+          expected state 
+   3. Some transitions are dependent on partner, such transitions based on packet are validated 
+   4. If current packet is first packet sent by interface, actor state will be initialised, port number will be 		recorded 
+   5. Transitions baed on different conditions are done 
+   6. Packet is saved in last_pdu sent
 
-TO BE IMPROVED:
-1. Since multithreading is used, the output of logfile sequence may be altered with 1 or 2 positions due to availability of CPU for different thread
-2. Output is dependent on delay in arrival time since virtual clock is running and due to multithreading.
-3. some variables behaviour need to be checked if packet is received before port number is assigned to corresponding interface.
+6. If packet is received
+    1. Partner port and sender are recorded
+    2. Interface which is actually received will be fetched based on sender address, partner port value
+    3. If any packet is sent out from interface, sent content as actor state will be validated.
+        Dependency check will be done
+    4. If any packet is received on that interface, partner values are compared with previous packet
+    5. Different Transitions possibles are done
+    6. Packet is saved in last_pdu received
 
 
-## MUX simulation:
-inputs: host, filename, outputfile
-
-FUNCTION:
-1. checks the packet crafting possibilities in  partner information manipulation.
-2. checks decisions dependent on partner state (collecting cannot be done if partner is not sync, distributing cannot be done if partner is not collecting).
-3. reports change in the actor or partner information exchanged.
-4. reports if violation done in actor or partner state in sequence (synchronization, collecting, distributing).
-5. Simulates the MUX machine transition in response to packets exchanged.
-
-LOGIC:
-1. A class called statemachine is created where MUX states and transitions are defined, each object will be created for each host.
-2. Packet sanitization is done to check anomalies
-3. Based on current state of machine, possible decisions, transitions and reasons are logged in to log file
-
-TO BE IMPROVED:
-1. If packet is received first, some behaviour is not predicted or packet is ignored right now.
-2. ...
-
+Supporting functions:
+1. find_int_mac 
+2. find_actor_interface
+3. detect_PDU_info_changes
+4. dependency_check
+5. check_actor_info
+6. check_partner_info
+7. sync_col_dist_check
+	
+	
 
 
 
