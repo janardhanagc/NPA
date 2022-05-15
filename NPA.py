@@ -25,7 +25,7 @@ if __name__ == '__main__':
     while os.path.exists(path+output_file) is True:
         subscript = subscript + 1
         output_file = output_file[:output_file.rfind('_')]+'_output'+str(subscript)+'.log'
-    print('\n\nAnalysis will be stored in : ', path, output_file,"\n\n",sep='')
+    print('\n\nAnalysis will be stored in : ', path, output_file, "\n\n", sep='')
 
     if len(lines[1]) == 0:
         print("Protocol not specified, analysis cannot be done")

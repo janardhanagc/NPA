@@ -148,17 +148,17 @@ def validate_packet(p):
 
 
 prev_index = -1
-LACP_packets = 0
+LACP_indices = list()
 
 
 def is_of_interest(pkt, index, interfaces):
-    global LACP_packets, prev_index
+    global LACP_indices, prev_index
     if validate_packet(pkt) is False:
         #log.debug("Packet no. : {} - Not valid LACP packet to process further, packet ignored".format(index+1))
         return False
 
     if index != prev_index:
-        LACP_packets = LACP_packets + 1
+        LACP_indices.append(index+1)
         prev_index = index
     for interface in interfaces:
         if get_src_eth_mac(pkt) == interface.mac:
@@ -231,6 +231,9 @@ def is_valid_port(port):
     valid_port = valid_port[:2]+" "+valid_port[2:]
     return [True, valid_port]
 
-
+def pkt_info(pkt, index):
+    info = 'pkt #'
+    info = info+str(index+1)
+    return info
 
 

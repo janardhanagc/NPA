@@ -7,7 +7,7 @@ import Lacp_selection
 from LacPdu import *
 import Lacp_Rx_Tx_Sm
 import Lacp_MUX
-from main import NPA
+from NPA import NPA
 from Interface import *
 from pcapfile import savefile
 import logging as log
@@ -114,4 +114,7 @@ class LacpNPA(NPA):
                 if index == len(pkts)//20*batch:
                     print("{ind:5d} packets processed".format(ind=index))
         print('All packets processed')
-        print('Total', LacPdu.LACP_packets, 'LACP packets found out of', len(pkts), 'packets in pcap file')
+        print('Total', len(LacPdu.LACP_indices), 'LACP packets found out of', len(pkts), 'packets in pcap file')
+        log.debug('LACP indices are\n{}'.format(LacPdu.LACP_indices))
+
+
