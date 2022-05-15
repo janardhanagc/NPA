@@ -6,8 +6,8 @@ class Interface:
         self.mac = mac
         self.last_sent_time = last_sent_time
         self.last_received_time = last_received_time
-        self.last_pdu_tx = ''
-        self.last_pdu_rx = ''
+        self.last_pkt_tx = ''
+        self.last_pkt_rx = ''
 
     # Return the interface from interfaces list which has same mac address
     @staticmethod
@@ -38,14 +38,17 @@ class LacpInterface(Interface):
     @staticmethod
     def find_actor_interface(interfaces, actor_port, sender):
         for interface in interfaces:
-            if actor_port == interface.port or sender == interface.partnerMac:
+            if interface.partnerMac == ' ':     # for first packet received when partnerMac not available
+                if actor_port == interface.port:
+                    return interface
+            elif interface.partnerMac == sender:  # from second packet onwards, port number may change
                 return interface
         return None
 
     def get_interface_details(self):
         attributes = ['mac', 'port', 'partnerMac', 'last_sent_time', 'last_received_time', 'actor_timeout',
                       'partner_timeout', 'actor_state', 'partner_state']
-        interface = {'mac': self.mac, 'port': self.port, 'partnerMac': self.partnerMac,
+        interface = {'mac': self.mac, 'port': self.port, 'partnerMac': self.partnerMac, 'partnerPort': self.partnerPort,
                                       'last_sent_time': self.last_sent_time, 'last_received_time': self.last_received_time,
                                       'actor_timeout': self.actor_timeout, 'partner_timeout': self.partner_timeout,
                                       'actor_state': self.mux_sm.actor_state, 'partner_state': self.mux_sm.partner_state}

@@ -43,29 +43,31 @@ state_values={'activity':['passive','active'],'time_out':['long','short'],'aggre
               'synchronization':['Out of sync','In sync'],'collecting':['disabled','enabled'],
               'distributing':['disabled','enabled'],'defaulted':['No','Yes'],'expired':['No','Yes']}
 
-def get_PDU(p):
+agent_keys = ['system_priority', 'system', 'key', 'port_priority', 'port']
+
+def get_PDU(pkt):
     PDU={}
     printed = 0
-    p = scapy.hexstr(p)
-    if (p[36:48] == '81 00 00 01 '):  # ignoring 802.1q header
-        p = p[:37] + p[49:372]
+    pkt = scapy.hexstr(pkt)
+    if (pkt[36:42] == '81 00 '):  # ignoring 802.1q header
+        pkt = pkt[:37] + pkt[49:372]
     else:
-        p = p[:372]
+        pkt = pkt[:372]
 
     for j in LACPDU:
-        PDU.update({j:p[printed:printed + LACPDU[j][0] * 3 - 1]})
+        PDU.update({j: pkt[printed:printed + LACPDU[j][0] * 3 - 1]})
         printed = printed + LACPDU[j][0] * 3
     return PDU
 
 
-def print_PDU_info(p): # p means packet
-    PDU=get_PDU(p)
+def print_PDU_info(pkt):  # p means packet
+    PDU=get_PDU(pkt)
     for j in PDU:
         print(j,": ",PDU[j])
 
 
-def get_actor_state(p):
-    state=get_PDU(p)['Actor_state']
+def get_actor_state(pkt):
+    state=get_PDU(pkt)['Actor_state']
     state=str(bin(int(state,16)))[2:].zfill(8)
     state=state[::-1]
     actor_state={}
@@ -78,69 +80,86 @@ def get_partner_state(p):
     state = get_PDU(p)['Partner_state']
     state = str(bin(int(state, 16)))[2:].zfill(8)
     state = state[::-1]     # reversing string
-    partner_state={}
+    partner_state = {}
     for bit in range(8):
         partner_state.update({State_fields[bit]:int(state[bit])})
     return partner_state
 
 
 def print_actor_state(p):
-    state=get_actor_state(p)
+    state = get_actor_state(p)
     for bit in state:
-        print(bit,':',state_values[bit][state[bit]])
+        print(bit, ':', state_values[bit][state[bit]])
+
 
 def print_partner_state(p):
     state = get_partner_state(p)
     for bit in state:
         print(bit, ':', state_values[bit][state[bit]])
 
+
 def get_src_eth_mac(p):
     p=scapy.hexstr(p)
-    if (p[36:48] == '81 00 00 01 '):  # ignoring 802.1q header
-        p = p[:37] + p[49:372]
     p=p[6*3:6*3+17]
     return p
 
 
+def get_info_of(agent, pkt):   # agent can be partner or actor
+    # keys = ['system_priority', 'system', 'key', 'port_priority', 'port']
+    PDU = get_PDU(pkt)
+    agent_info = dict()
+    agent = agent + '_'     # to match with actual PDU keys
+    for each in agent_keys:  # global variable agent_keys
+        agent_info.update({agent+each: PDU[agent+each]})
+    return agent_info
+
+
 def validate_packet(p):
     flag = True
-
     if (get_PDU(p)['type']!= '88 09'):
-        log.error("Protocol type is not '0x8809', but '0x{}'".format(get_PDU(p)['type']))
+        #log.debug("Protocol type is not '0x8809', but '0x{}'".format(get_PDU(p)['type']))
         flag = False
 
     if (get_PDU(p)['subtype']!= '01'):
-        log.error("Protocol subtype is not '01', but '{}'".format(get_PDU(p)['subtype']))
+        #log.debug("Protocol subtype is not '01', but '{}'".format(get_PDU(p)['subtype']))
         flag = False
 
     if (get_PDU(p)['Version_number']!= '01'):
-        log.error("Protocol version number is not '01', but '{}'".format(get_PDU(p)['Version_number']))
+        #log.debug("Protocol version number is not '01', but '{}'".format(get_PDU(p)['Version_number']))
         flag = False
 
     if(get_PDU(p)['Actor_TLV_type']!='01'):
-        log.error("Actor_TLV_type is not '01', but '{}'".format(get_PDU(p)['Actor_TLV_type']))
+        #log.debug("Actor_TLV_type is not '01', but '{}'".format(get_PDU(p)['Actor_TLV_type']))
         flag=False
 
     if (get_PDU(p)['Actor_information_length']!= '14'):
-        log.error("Actor_information_length is not '0x14', but '0x{}'".format(get_PDU(p)['Actor_information_length']))
+        #log.debug("Actor_information_length is not '0x14', but '0x{}'".format(get_PDU(p)['Actor_information_length']))
         flag = False
 
     if (get_PDU(p)['Partner_TLV_type']!= '02'):
-        log.error("Partner_TLV_type is not '0x02', but '{}'".format(get_PDU(p)['Partner_TLV_type']))
+        #log.debug("Partner_TLV_type is not '0x02', but '{}'".format(get_PDU(p)['Partner_TLV_type']))
         flag = False
 
     if (get_PDU(p)['Partner_information_length']!= '14'):
-        log.error("Partner_information_length is not '0x14', but '0x{}'".format(get_PDU(p)['Partner_information_length']))
+        #log.debug("Partner_information_length is not '0x14', but '0x{}'".format(get_PDU(p)['Partner_information_length']))
         flag = False
+
     return flag
 
 
-def is_of_interest(pkt, index, interfaces):
+prev_index = -1
+LACP_packets = 0
 
+
+def is_of_interest(pkt, index, interfaces):
+    global LACP_packets, prev_index
     if validate_packet(pkt) is False:
-        log.error("Packet no. : {} - Not valid LACP packet to process further, packet ignored".format(index+1))
+        #log.debug("Packet no. : {} - Not valid LACP packet to process further, packet ignored".format(index+1))
         return False
 
+    if index != prev_index:
+        LACP_packets = LACP_packets + 1
+        prev_index = index
     for interface in interfaces:
         if get_src_eth_mac(pkt) == interface.mac:
             return True
@@ -148,7 +167,70 @@ def is_of_interest(pkt, index, interfaces):
             return True
         elif get_src_eth_mac(pkt) == interface.partnerMac and interface.partnerMac != '':
             return True
-    log.debug("Packet no. : {} is of not interest, packet ignored".format(index+1))
+    #log.debug("Packet no. : {} is of not interest, packet ignored".format(index+1))
     return False
+
+
+def is_valid_mac(mac):
+    if len(mac) >= 3:
+        remove = mac[2]
+    else:
+        return [False, '']
+    characters = mac.replace(remove, "")
+    characters = list(characters)
+    valid_mac = ''
+    for char in characters:
+        if char.isdigit():
+            valid_mac = valid_mac+str(char)
+        elif char.isalpha():
+            char = char.upper()
+            if char in ['A', 'B', 'C', 'D', 'E', 'F']:
+                valid_mac = valid_mac + char
+            else:
+                return [False, '']
+        else:
+            return [False, '']
+    if len(valid_mac) != 12:
+        return [False, '']
+
+    characters = list(valid_mac)
+    index = 0
+    valid_mac = ''
+    while index != 12:
+        valid_mac = valid_mac + characters[index]
+        valid_mac = valid_mac + characters[index+1]
+        valid_mac = valid_mac + str(' ')
+        index = index+2
+    valid_mac = valid_mac[:-1]
+    return [True, valid_mac]
+
+
+def is_valid_port(port):
+    if len(port) > 3:
+        remove = port[2]
+    else:
+        return [False, port]
+
+    characters = port.replace(remove, "")
+    characters = list(characters)
+    valid_port = ''
+    for char in characters:
+        if char.isdigit():
+            valid_port = valid_port + str(char)
+        elif char.isalpha():
+            char = char.upper()
+            if char in ['A', 'B', 'C', 'D', 'E', 'F']:
+                valid_port = valid_port + char
+            else:
+                return [False, '']
+        else:
+            return [False, '']
+    if len(valid_port) != 4:
+        return [False, '']
+
+    valid_port = valid_port[:2]+" "+valid_port[2:]
+    return [True, valid_port]
+
+
 
 

@@ -1,6 +1,8 @@
 import pytz
+import os.path
 import scapy.all as scapy
 
+import LacPdu
 import Lacp_selection
 from LacPdu import *
 import Lacp_Rx_Tx_Sm
@@ -16,35 +18,100 @@ class LacpNPA(NPA):
         self.pcap_file = ''
         self.time_zone = ''
         self.interfaces = []
-        self.detailed = True
+        self.detailed = False     # used in Rx_Tx machine packet jitter calculation
         self.hosts = []
 
-    def take_input(self):
+    def take_input(self, cnfg):
+        # cnfg format
+        # 0 pcap path
+        # 1 protocol
+        # 2 time zone
+        # 3 detailed or not
+        # 4 agent count
+        # 5 list of agents in tuple form
+
+        self.pcap_file = cnfg[0][cnfg[0].rfind(' ')+1:-1]      # considering string after space character till newline
+        if os.path.exists(self.pcap_file) is False:
+            print('Input pcap file does not exist')
+            exit(0)
+        self.time_zone = cnfg[2][cnfg[2].rfind(' ')+1:-1]
+        if self.time_zone not in list(pytz.all_timezones_set):
+            print('Invalid Timezone, processing in Asia/Kolkata Timezone')
+            self.time_zone = 'Asia/Kolkata'
+        self.detailed = bool(int(cnfg[3][cnfg[3].rfind(' ')+1:-1]))  # 0 or 1 only
+        interface_count = int(cnfg[4][cnfg[4].rfind(' ')+1:-1])
         # host is tuple in format (mac, partnerMac, port, partnerPort)
-        self.hosts = [('1C 6A 7A 1F 1D 7F', '', '', '')]
-        #self.hosts = [('AC 3A 67 0D CC D7',)]
-        self.hostEthMacs=[]
-        self.pcap_file = "/Users/jgowdac/Documents/PCAP FILES/Timestamp shifted/lacp_copy_ts.pcap"
-        # self.pcap_file = "/Users/jgowdac/Documents/PCAP FILES/Timestamp shifted/lacp_copy(1).pcap"
-        self.time_zone = 'Asia/Shanghai'
+        self.hostEthMacs = []
+
+        count = 0
+        while count < interface_count:
+            user_entry = cnfg[count+5]
+            user_entry_mac = user_entry[user_entry.find("'")+1:user_entry.find("'", user_entry.find("'")+1)]
+            [flag, mac] = is_valid_mac(user_entry_mac)
+            if flag is False:
+                print('You have entered Actor ethernet MAC in invalid format')
+                print('You entered', user_entry_mac, 'and the interface is removed from analysis')
+                count = count + 1
+                continue
+            user_entry = user_entry[user_entry.find(',')+1:]   # actor mac removed from line reading
+            host = (mac,)
+            user_entry_pmac = user_entry[user_entry.find("'")+1:user_entry.find("'", user_entry.find("'")+1)]
+            if len(user_entry_pmac) != 0:
+                [flag, mac] = is_valid_mac(user_entry_pmac)
+            if flag is True:
+                mac = (mac, )
+                host = host + mac
+            else:
+                print('You have entered Partner Ethernet MAC -', user_entry_pmac, ' in invalid format and is ignored')
+                host = host + tuple(" ")
+
+            user_entry = user_entry[user_entry.find(',') + 1:]  # partner mac removed from line reading
+            user_entry_port = user_entry[user_entry.find("'")+1:user_entry.find("'", user_entry.find("'")+1)]
+            [flag, port] = is_valid_port(user_entry_port)
+            if flag is True:
+                port = (port, )
+                host = host + port
+            else:
+                print('You have entered Actor port number-', user_entry_port,' in invalid format and is ignored')
+                host = host + tuple(" ")
+
+            user_entry = user_entry[user_entry.find(',') + 1:]  # actor port removed from line reading
+            user_entry_par_port = user_entry[user_entry.find("'")+1:user_entry.find("'", user_entry.find("'")+1)]
+            [flag, port] = is_valid_port(user_entry_par_port)
+            if flag is True:
+                port = tuple(port, )
+                host = host + port
+            else:
+                print('You have entered Partner port number-',user_entry_par_port,' in invalid format and is ignored')
+            self.hosts.append(host)
+            count = count + 1
 
         for host in self.hosts:
             self.interfaces.append(LacpInterface(host))
         for host in self.hosts:
             self.hostEthMacs.append(host[0])
 
-    def run_analyzer(self):
-        self.take_input()
+
+    def run_analyzer(self, cnfg):
+        self.take_input(cnfg)
+        print()
         tz = pytz.timezone(self.time_zone)
         pkts = scapy.rdpcap(self.pcap_file)
         log.debug("Reading file - {}".format(self.pcap_file))
+        log.debug("Processing in interfaces {} perspective".format(self.hostEthMacs))
         testcap = open(self.pcap_file, 'rb')
         capfile = savefile.load_savefile(testcap, verbose=True)
 
         index = 0
+        print('\n')
         for pkt in pkts:
             pkt_time = capfile.packets[index].timestamp_us * pow(10, -6) + capfile.packets[index].timestamp
             Lacp_Rx_Tx_Sm.run_rx_tx_sm(index, pkt, pkt_time, self.interfaces, self.hostEthMacs, self.detailed, tz)
-            Lacp_selection.run_selection_logic(pkt, index, self.hostEthMacs, self.interfaces)
+            Lacp_selection.run_selection_logic(pkt, index, self.interfaces)
             Lacp_MUX.run_mux_machine(index, pkt, pkt_time, self.hostEthMacs, self.interfaces)
-            index=index+1
+            index = index+1
+            for batch in range(1, 20):    # total packets are split into 20 batches
+                if index == len(pkts)//20*batch:
+                    print("{ind:5d} packets processed".format(ind=index))
+        print('All packets processed')
+        print('Total', LacPdu.LACP_packets, 'LACP packets found out of', len(pkts), 'packets in pcap file')

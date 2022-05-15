@@ -47,7 +47,7 @@ def check_rx_time_out(current_time, interfaces):   # called to check timeout at 
             interface.selected = 'UNSELECTED'
             log.error('Actor state is Defaulted and selected is UNSELECTED')
             # assuming oper parameters are different from admin parameters
-            interface.mux_sm.move_to_detached()
+            interface.mux_sm.move_to_detached()      # changing MUX state
 
         elif (interface.last_received_time != 0) and (current_time-interface.last_received_time > 2*interface.actor_timeout
                                                     and interface.Rx_warned is False):
@@ -70,7 +70,11 @@ def run_tx_sm(index, current_time_stamp, pkt, interfaces, detailed):
     if interface:
         # check if this is first packet seen in pcap
         if interface.last_sent_time == 0:
-            interface.port = LacPdu.get_PDU(pkt)['Actor_port']
+            actor_port = LacPdu.get_PDU(pkt)['Actor_port']
+            if interface.port != " " and interface.port != actor_port:
+                log.warning("{} - User entered actor port number as '{}' and is updating to {} based on packet sent"
+                            .format(interface.mac, interface.port, actor_port))
+            interface.port = actor_port  # updating actor port number
             log.info(
                 'Tx - {} : packet no. : {} - 1st packet sent at {}'.format(interface.mac, index + 1,
                                                                      ts_to_str(current_time_stamp)))
@@ -116,7 +120,9 @@ def run_rx_sm(index, current_time_stamp, pkt, interfaces, detailed):
         interface.last_received_time = current_time_stamp
         interface.partner_timeout = periodic[list(periodic.keys())[time_out]]
         interface.mux_sm.actor_state['defaulted'] = 0
-        #interface.partnerMac = sender
+        if interface.partnerMac == " " or interface.partnerMac != sender:
+            log.warning("Partner Mac changed from {} to {}".format(interface.partnerMac, sender))
+            interface.partnerMac = sender
         return
 
     interface.mux_sm.actor_state['defaulted'] = 0
