@@ -5,7 +5,7 @@ To get analysis log report:
 Python3 NPA.py <path_of_config_file>
 
 To get filtered analsysis : 
-Pythong3 Lacp_log_utility.py filter <'[a, b]'>
+Python3 Lacp_log_utility.py filter <'[a, b]'>
 where a and b are range a<b, 
 range can be also specified as '[a, b, c]' where log will starts from
 'b' packets prior to index 'a' and 'c' packets post to index 'a'
