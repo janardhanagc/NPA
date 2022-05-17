@@ -1,4 +1,30 @@
------------------------------ IN WRITING PHASE --------------------------
+
+Instructions to run the program
+
+To get analysis log report:
+Python3 NPA.py <path_of_config_file>
+
+To get filtered analsysis : 
+Python3 Lacp_log_utility.py filter <'[a, b]'>
+where a and b are range a<b, 
+range can be also specified as '[a, b, c]' where log will starts from
+'b' packets prior to index 'a' and 'c' packets post to index 'a'
+
+
+Instructions to write config file </br>
+line 1 : File : <path_of_.pcap_file> </br>
+line 2 : Protocol : LACP</br>
+line 3 : Timezone captured : Asia/Kolkata </br>
+			(refer list of timezones)</br>
+line 4 : Detailed analysis : 0 </br>
+			(0 for summary, 1 for detailed)</br>
+line 5 : Agents count : 1 (number of interfaces to be analysed), subsequent lines should have tuple of information of each interface</br>
+line 6 : (MAC1, Partner_MAC1, port1, Partner_port1)</br>
+line 7 : (MAC2, Partner_MAC2, ' ', ' ') </br>
+			(MAC is compulsory)</br>
+
+
+
 
 # NPA
 
