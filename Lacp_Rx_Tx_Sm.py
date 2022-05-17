@@ -25,34 +25,35 @@ def check_tx_time_out(current_time):  # called to check timeout at Tx
         if (interface.last_sent_time != 0) and (current_time-interface.last_sent_time > 3*interface.partner_timeout):
             log.error(
                 'Tx - {} : previous packet sent at {}, packet not sent in last 3 timeout(3*{}s)'.format(
-                    interface.mac, ts_to_str(interface.last_sent_time), interface.partner_timeout))
+                    interface.mac.replace(' ',':'), ts_to_str(interface.last_sent_time), interface.partner_timeout))
             to_be_removed.append(interface)
 
         elif (interface.last_sent_time != 0) and (current_time-interface.last_sent_time > 2*interface.partner_timeout):
             log.warning(
                 'Tx - {} : previous packet sent at {}, packet not sent in last 2 timeout(2*{}s)'.format(
-                    interface.mac, ts_to_str(interface.last_sent_time), interface.partner_timeout))
+                    interface.mac.replace(' ',':'), ts_to_str(interface.last_sent_time), interface.partner_timeout))
 
     for interface in to_be_removed:  # interfaces whose error is already reported are suspended temporarily from
         timer_list_remove(tx_timer_list, interface)         # checking timeout till new packet sent
 
 
 def check_rx_time_out(current_time, interfaces):   # called to check timeout at Rx
-    alive_interfaces = [interface for interface in interfaces if interface.mux_sm.actor_state['defaulted'] == 0]
+    alive_interfaces = [interface for interface in interfaces if interface.mux_sm.actor_state['expired'] == 0]
     for interface in alive_interfaces:
         if (interface.last_received_time != 0) and (current_time-interface.last_received_time > 3*interface.actor_timeout):
             log.error('Rx - {} : previous packet received at {}, packet not received in last 3 timeout(3*{})s'.format(
-                interface.mac, ts_to_str(interface.last_received_time), interface.actor_timeout))
-            interface.mux_sm.actor_state['defaulted'] = 1
+                interface.mac.replace(' ',':'), ts_to_str(interface.last_received_time), interface.actor_timeout))
+            interface.mux_sm.actor_state['expired'] = 1
             interface.selected = 'UNSELECTED'
-            log.error('Rx - {} : Actor state is Defaulted and selected is UNSELECTED'.format(interface.mac))
+            log.error('Rx - {} : Actor state is Defaulted and selected is UNSELECTED'.format(
+                interface.mac.replace(' ',':')))
             # assuming oper parameters are different from admin parameters
             interface.mux_sm.move_to_detached()      # changing MUX state
 
         elif (interface.last_received_time != 0) and (current_time-interface.last_received_time > 2*interface.actor_timeout
                                                     and interface.Rx_warned is False):
             log.warning('Rx - {} : previous packet received at {}, packet not received in last 2 timeout(2*{}s)'.format(
-                interface.mac, ts_to_str(interface.last_received_time), interface.actor_timeout))
+                interface.mac.replace(' ',':'), ts_to_str(interface.last_received_time), interface.actor_timeout))
             interface.Rx_warned = True
 
 
@@ -72,11 +73,12 @@ def run_tx_sm(index, current_time_stamp, pkt, interfaces, detailed):
         if interface.last_sent_time == 0:
             actor_port = LacPdu.get_PDU(pkt)['Actor_port']
             if interface.port != " " and interface.port != actor_port:
-                log.warning("{} : MAC - {} : User entered actor port number as '{}' and is updating to {} based on "
-                           "packet sent".format(LacPdu.pkt_info(pkt, index), interface.mac, interface.port, actor_port))
+                log.warning("{} : MAC - {} : User entered actor port number as '0x{}' and is updating to {} based on "
+                           "packet sent".format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'),
+                                                interface.port.replace(' ',''), actor_port))
             interface.port = actor_port  # updating actor port number
             log.info(
-                'Tx - {} : MAC - {} : 1st packet sent at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac,
+                'Tx - {} : MAC - {} : 1st packet sent at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac.replace(' ',':'),
                                                                      ts_to_str(current_time_stamp)))
             interface.last_sent_time = current_time_stamp
             interface.actor_timeout = periodic[list(periodic.keys())[time_out]]
@@ -84,19 +86,28 @@ def run_tx_sm(index, current_time_stamp, pkt, interfaces, detailed):
             return
 
         if detailed is True:
-            log.info('Tx - {} : MAC - {} : previous packet sent at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac,
+            log.info('Tx - {} : MAC - {} : previous packet sent at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac.replace(' ',':'),
                                                                 ts_to_str(interface.last_sent_time)))
             log.info(
-                'Tx - {} : MAC - {} : current packet sent at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac,
+                'Tx - {} : MAC - {} : current packet sent at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac.replace(' ',':'),
                                                                 ts_to_str(current_time_stamp)))
             log.info(
-                'Tx - {} : MAC - {} : Jitter: {jit:.4f} '.format(LacPdu.pkt_info(pkt,index), interface.mac,
+                'Tx - {} : MAC - {} : Jitter: {jit:.4f} '.format(LacPdu.pkt_info(pkt,index), interface.mac.replace(' ',':'),
                                                                  jit=current_time_stamp - interface.last_sent_time))
             log.info('Tx - {} : MAC - {} : partner expected new packet at every {} second interval'
-                     .format(LacPdu.pkt_info(pkt, index), interface.mac, interface.partner_timeout))
+                     .format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'), interface.partner_timeout))
         else:
-            log.info('Tx - {} : MAC - {} : sent packet at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac,
+            log.info('Tx - {} : MAC - {} : sent packet at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac.replace(' ',':'),
                                                                      ts_to_str(current_time_stamp)))
+
+        if interface.mux_sm.current_state.value != ['distributing'] and interface.mux_sm.actor_state['time_out'] != time_out:
+            log.warning('{} : MAC - {} : expected time_out - {}, actual sent is {}'.format(LacPdu.pkt_info(pkt, index),
+                            interface.mac.replace(" ",":"), LacPdu.state_values['time_out'][interface.mux_sm.actor_state['time_out']],
+                                                        LacPdu.state_values['time_out'][time_out]))
+        elif interface.mux_sm.actor_state['time_out'] != time_out:
+            log.info('{} : MAC - {} : expected time_out - {}, actual sent is {}'.format(LacPdu.pkt_info(pkt, index),
+                            interface.mac.replace(" ",":"), LacPdu.state_values['time_out'][interface.mux_sm.actor_state['time_out']],
+                                                            LacPdu.state_values['time_out'][time_out]))
         interface.mux_sm.actor_state['time_out'] = time_out
         interface.actor_timeout = periodic[list(periodic.keys())[time_out]]
         interface.last_sent_time = current_time_stamp
@@ -118,41 +129,41 @@ def run_rx_sm(index, current_time_stamp, pkt, interfaces, detailed):
         return
     if interface.last_received_time == 0:
         log.info(
-                'Rx - {} : MAC - {} : 1st packet received at {}'.format(LacPdu.pkt_info(pkt, index), interface.mac,
+                'Rx - {} : MAC - {} : 1st packet received at {}'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'),
                                                                          ts_to_str(current_time_stamp)))
         interface.last_received_time = current_time_stamp
         interface.partner_timeout = periodic[list(periodic.keys())[time_out]]
-        interface.mux_sm.actor_state['defaulted'] = 0
+        interface.mux_sm.actor_state['expired'] = 0
         if interface.partnerMac == " " or interface.partnerMac != sender:
             log.warning("Rx - {}: MAC - {} :Partner Mac changed from {} to {}".format(LacPdu.pkt_info(pkt, index),
-                                                                        interface.mac, interface.partnerMac, sender))
+                                                                        interface.mac.replace(' ',':'), interface.partnerMac, sender))
             interface.partnerMac = sender
         return
 
-    interface.mux_sm.actor_state['defaulted'] = 0
+    interface.mux_sm.actor_state['expired'] = 0
     interface.Rx_warned = False
 
-    if interface.mux_sm.actor_state['defaulted'] == 1:
-        log.info('Rx - {} : MAC - {} : new packet received at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac,
+    if interface.mux_sm.actor_state['expired'] == 1:
+        log.info('Rx - {} : MAC - {} : new packet received at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac.replace(' ',':'),
                                                                           ts_to_str(current_time_stamp)))
         interface.last_received_time = current_time_stamp
         interface.partner_timeout = periodic[list(periodic.keys())[time_out]]
-        interface.mux_sm.actor_state['defaulted']=0
+        interface.mux_sm.actor_state['expired']=0
         return
     if detailed is True:
         log.info('Rx - {} : MAC - {} : previous packet received at {}'.format(LacPdu.pkt_info(pkt, index),
-                                                            interface.mac, ts_to_str(interface.last_received_time)))
+                                                            interface.mac.replace(' ',':'), ts_to_str(interface.last_received_time)))
 
         log.info(
-            'Rx - {} : MAC - {} : current packet received at {}'.format(LacPdu.pkt_info(pkt, index), interface.mac,
+            'Rx - {} : MAC - {} : current packet received at {}'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'),
                                                                         ts_to_str(current_time_stamp)))
         log.info(
-            'Rx - {} : MAC - {} : Jitter: {jit:.4f} '.format(LacPdu.pkt_info(pkt, index), interface.mac,
+            'Rx - {} : MAC - {} : Jitter: {jit:.4f} '.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'),
                                                              jit=current_time_stamp - interface.last_received_time))
         log.info('Rx - {} : MAC - {} : partner expected new packet at every {} second interval'
-                 .format(LacPdu.pkt_info(pkt, index), interface.mac, interface.actor_timeout))
+                 .format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'), interface.actor_timeout))
     else:
-        log.info('Rx - {} : MAC - {} : received packet at {}'.format(LacPdu.pkt_info(pkt, index), interface.mac,
+        log.info('Rx - {} : MAC - {} : received packet at {}'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'),
                                                                      ts_to_str(current_time_stamp)))
     interface.mux_sm.partner_state['time_out'] = time_out
     interface.partner_timeout = periodic[list(periodic.keys())[time_out]]

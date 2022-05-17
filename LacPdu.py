@@ -236,4 +236,14 @@ def pkt_info(pkt, index):
     info = info+str(index+1)
     return info
 
+def get_changes(old_state, new_state):
+    changes = ''
+    for bit in State_fields:
+        if old_state[bit] != new_state[bit]:
+            changes = changes + str(bit) + " changed from "+str(state_values[bit][old_state[bit]])+" to " + \
+                      str(state_values[bit][new_state[bit]])
+            changes = changes+"\n"
+    changes = changes[:-1]
+    return changes
+
 
