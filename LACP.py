@@ -94,7 +94,6 @@ class LacpNPA(NPA):
 
     def run_analyzer(self, cnfg):
         self.take_input(cnfg)
-        print()
         tz = pytz.timezone(self.time_zone)
         pkts = scapy.rdpcap(self.pcap_file)
         log.debug("Reading file - {}".format(self.pcap_file))
@@ -103,7 +102,6 @@ class LacpNPA(NPA):
         capfile = savefile.load_savefile(testcap, verbose=True)
 
         index = 0
-        print('\n')
         for pkt in pkts:
             pkt_time = capfile.packets[index].timestamp_us * pow(10, -6) + capfile.packets[index].timestamp
             Lacp_Rx_Tx_Sm.run_rx_tx_sm(index, pkt, pkt_time, self.interfaces, self.hostEthMacs, self.detailed, tz)

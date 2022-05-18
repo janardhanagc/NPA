@@ -326,14 +326,15 @@ def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
         if interface.mux_sm.is_waiting and actor_state['synchronization'] == 1:
             if interface.mux_sm.Ready is True:
                 log.info('{} : MUX - {} : Actor is in WAITING state, Actor synchronization becomes IN SYNC implied'
-                         ' Actor Ready is True'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':')))
+                         ' Actor Ready is True. So, Actor moving to ATTACHED state'.format(LacPdu.pkt_info(pkt, index),
+                                                                                        interface.mac.replace(' ',':')))
             else:
                 log.error('{} : MUX - {} : wait_while_timer not yet expired, actor unexpectedly moved to attached '
                           'state'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':')))
             interface.mux_sm.to_attached(partner_state)
         elif interface.mux_sm.is_waiting and actor_state['synchronization'] == 0:
             if interface.mux_sm.Ready is True:
-                log.error('{} : MUX - {} : Actor was in WAITING state, despite wait_while_timer expired, '
+                log.error('{} : MUX - {} : Actor was in WAITING state. Despite wait_while_timer expired, '
                           'actor synchronization stays False.\nActor selected might be UNSELECTED or STANDBY, '
                           'so actor is moved to DETACHED state'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':')))
                 interface.selected = 'UNSELECTED'

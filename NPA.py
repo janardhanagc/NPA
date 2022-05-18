@@ -21,6 +21,7 @@ if __name__ == '__main__':
     pcap_file = lines[0][lines[0][:-1].rfind('/')+1:]
     output_file = lines[0][lines[0][:-1].rfind('/')+1:lines[0][:-1].rfind('.')]+'_output.log'
     path = lines[0][lines[0].rfind(" ")+1:lines[0][:-1].rfind('/')+1]
+
     subscript = 0
     while os.path.exists(path+output_file) is True:
         subscript = subscript + 1
@@ -31,6 +32,7 @@ if __name__ == '__main__':
         print("Protocol not specified, analysis cannot be done")
         exit(0)
     protocol = lines[1][lines[1].rfind(' ')+1:-1]
+
     if protocol.upper() != 'LACP':
         print(protocol.upper(), 'is not yet developed, only LACP available')
         exit(0)
