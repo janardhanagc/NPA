@@ -48,7 +48,6 @@ The following are the functions present:
 
     check_tx_time_out
     check_rx_time_out
-    validate_tx_packet
     run_tx_sm
     run_rx_sm
     run_rx_tx_sm
