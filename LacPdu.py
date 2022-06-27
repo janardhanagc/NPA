@@ -8,7 +8,7 @@ LACPDU = {"Destination_Address": [6,6,'01 80 C2 00 00 02'],
               "Version_number": [1,16,'01'],
               "Actor_TLV_type": [1,17,'01'],
               "Actor_information_length": [1,18,'14'],
-              "Actor_system_priority": [2,20,],
+              "Actor_system_priority": [2,20],
               "Actor_system": [6,26],
               "Actor_key": [2,28],
               "Actor_port_priority": [2,30],
@@ -33,9 +33,6 @@ LACPDU = {"Destination_Address": [6,6,'01 80 C2 00 00 02'],
               "Reserved": [50,124],
               #"FCS": 4
         }
-#
-# State_fields=["LACP_Activity","LACP_Timeout","Aggregation","Synchronization","Collecting","Distributing",
-#               "Defaulted","Expired"]
 
 State_fields=["activity","time_out","aggregation","synchronization",
               "collecting","distributing","defaulted","expired"]
@@ -46,7 +43,7 @@ state_values={'activity':['passive','active'],'time_out':['long','short'],'aggre
 agent_keys = ['system_priority', 'system', 'key', 'port_priority', 'port']
 
 def get_PDU(pkt):
-    PDU={}
+    PDU = {}
     printed = 0
     pkt = scapy.hexstr(pkt)
     if (pkt[36:42] == '81 00 '):  # ignoring 802.1q header
@@ -54,23 +51,23 @@ def get_PDU(pkt):
     else:
         pkt = pkt[:372]
 
-    for j in LACPDU:
-        PDU.update({j: pkt[printed:printed + LACPDU[j][0] * 3 - 1]})
-        printed = printed + LACPDU[j][0] * 3
+    for key in LACPDU:
+        PDU.update({key: pkt[printed:printed + LACPDU[key][0] * 3 - 1]})
+        printed = printed + LACPDU[key][0] * 3
     return PDU
 
 
 def print_PDU_info(pkt):  # p means packet
-    PDU=get_PDU(pkt)
-    for j in PDU:
-        print(j,": ",PDU[j])
+    PDU = get_PDU(pkt)
+    for key in PDU:
+        print(key, ": ", PDU[key])
 
 
 def get_actor_state(pkt):
-    state=get_PDU(pkt)['Actor_state']
-    state=str(bin(int(state,16)))[2:].zfill(8)
-    state=state[::-1]
-    actor_state={}
+    state = get_PDU(pkt)['Actor_state']
+    state = str(bin(int(state, 16)))[2:].zfill(8)
+    state = state[::-1]
+    actor_state = {}
     for bit in range(8):
         actor_state.update({State_fields[bit]:int(state[bit])})
     return actor_state

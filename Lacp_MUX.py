@@ -13,7 +13,7 @@ def find_int_mac(interfaces, mac):
 
 # returns interface which is actually received the packet
 # partner port in PDU is actor port for local host
-def find_actor_interface(interfaces, actor_port, sender):  # partner port in PDU is actual actor port of some interface
+def find_actor_interface(interfaces, actor_port, sender):  
     for interface in interfaces:
         if interface.partnerMac == ' ':     # for first packet received when partnerMac not available
             if actor_port == interface.port:
@@ -130,6 +130,21 @@ class MuxMachine(sm.StateMachine):
                       format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'), self.current_state.value.upper()))
         return
 
+
+def run_timers(current_time, interfaces):
+
+    for interface in interfaces:
+        # wait_while_timer
+        if interface.mux_sm.is_waiting and current_time - interface.mux_sm.wait_while_timer_stamp > 2:
+            interface.mux_sm.Ready = True
+            interface.mux_sm.actor_state['synchronization'] = 1
+            interface.mux_sm.wait_while_timer_stamp = 0
+
+        # partner_in_sync_timer of 25 second
+
+    return
+
+
 # reports any changes in actor or partner information present among last two packet sent / received
 # it checks for system ID, priority, key, port, port priority of both actor and partner
 def detect_agent_info_changes(pkt_old, pkt_new, index, interface, direction):
@@ -217,13 +232,13 @@ def check_partner_info(old_pkt, new_pkt, index, interface):  # called when new p
     for key in LacPdu.agent_keys:
         if old_partner['Actor_'+key] != new_partner['Partner_'+key]:
             log.warning('{} : MAC - {} : Actor modified Partner_{} information received. Actual received was {}, sent back was {}'.
-                        format(LacPdu.pkt_info(new_pkt, index), interface.mac.replace(' ',':'),
+                        format(LacPdu.pkt_info(new_pkt, index), interface.mac.replace(' ', ':'),
                                key, old_partner['Actor_'+key], new_partner['Partner_'+key]))
     old_partner_state = LacPdu.get_actor_state(old_pkt)
     new_partner_state = LacPdu.get_partner_state(new_pkt)
     if old_partner_state != new_partner_state:
         log.warning('{} : MAC - {} : The actor modified partner state information'.format(
-            LacPdu.pkt_info(new_pkt, index), interface.mac.replace(' ',':')))
+            LacPdu.pkt_info(new_pkt, index), interface.mac.replace(' ', ':')))
         log.warning("{} : MAC - {} : {}".format(LacPdu.pkt_info(new_pkt, index), interface.mac, LacPdu.get_changes(
             old_partner_state, new_partner_state)))
 
@@ -281,11 +296,9 @@ def validate_tx_packet(interface, pkt, index):
 
 def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
 
-    for interface in interfaces:  # pkt time is used to run wait_while_timer
-        if interface.mux_sm.is_waiting and pkt_time - interface.mux_sm.wait_while_timer_stamp > 2:
-            interface.mux_sm.Ready = True
-            interface.mux_sm.actor_state['synchronization'] = 1
-            interface.mux_sm.wait_while_timer_stamp = 0
+    # call timers
+    run_timers(pkt_time, interfaces)
+
     if LacPdu.is_of_interest(pkt, index, interfaces) is False:  # checks if packet is not sent or received by
         return                                                          # interfaces interested
 
@@ -314,7 +327,7 @@ def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
             # interface.port = LacPdu.get_PDU(pkt)['Actor_port']  # initialization done in Rx machine
             if actor_state['synchronization'] == 1:
                 interface.selected = 'SELECTED'  # synchronization means selected should be already SELECTED (check)
-                interface.mux_sm.jump_to_state(actor_state)
+                interface.mux_sm.jump_to_state(actor_state,partner_state)
 
         if len(interface.last_pkt_rx) != 0:        # checks if actor has modified any partner state information
             check_partner_info(interface.last_pkt_rx, pkt, index, interface)
@@ -345,10 +358,7 @@ def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
                       (LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':')))
             interface.selected = 'UNSELECTED'
             interface.mux_sm.to_detach()
-        # elif interface.mux_sm.is_attached and partner_state['synchronization'] == 1:
-        #     log.info('{} : MUX - {} : Actor was in ATTACHED state. Partner synchronization is already IN SYNC. So, Actor'
-        #              ' moving to COLLECTING state'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ', ':')))
-        #     interface.mux_sm.to_collecting(partner_state)
+
         elif interface.mux_sm.is_distributing and actor_state['distributing'] == 0:
             log.error('{} : MUX - {} : Actor was in DISTRIBUTING state and actor distributing becomes False when packet'
                       ' sent out.Actor selected could be UNSELECTED or STANDBY. So, actor moving to COLLECTING state'
@@ -361,10 +371,6 @@ def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
                       format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':')))
             interface.selected = 'UNSELECTED'
             interface.mux_sm.to_attached(partner_state)
-        # elif interface.mux_sm.is_collecting and partner_state['collecting'] == 1:
-        #     log.info('{} : MUX - {} : Actor was in COLLECTING state. Partner was already in COLLECTING state. So, '
-        #              'Actor moving to DISTRIBUTING state'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':')))
-        #     interface.mux_sm.to_distributing()
 
         if prev_state != interface.mux_sm.current_state.value:
             log.info('{} : MAC - {} : Actor moved from {} state to {} state'.format(LacPdu.pkt_info(pkt, index),

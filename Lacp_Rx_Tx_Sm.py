@@ -6,6 +6,9 @@ from Interface import *
 rx_timer_list = set()   # not used anywhere
 tx_timer_list = set()
 
+tx_warn_interfaces = set()
+rx_warn_interfaces = set()
+
 global TZ
 
 periodic = {'long': 30, 'short': 1}
@@ -25,13 +28,17 @@ def check_tx_time_out(current_time):  # called to check timeout at Tx
         if (interface.last_sent_time != 0) and (current_time-interface.last_sent_time > 3*interface.partner_timeout):
             log.error(
                 'Tx - {} : previous packet sent at {}, packet not sent in last 3 timeout(3*{}s)'.format(
-                    interface.mac.replace(' ',':'), ts_to_str(interface.last_sent_time), interface.partner_timeout))
+                    interface.mac.replace(' ', ':'), ts_to_str(interface.last_sent_time), interface.partner_timeout))
             to_be_removed.append(interface)
+            if interface in tx_warn_interfaces:
+                tx_warn_interfaces.remove(interface)
 
-        elif (interface.last_sent_time != 0) and (current_time-interface.last_sent_time > 2*interface.partner_timeout):
+        elif (interface.last_sent_time != 0) and (current_time-interface.last_sent_time > 2*interface.partner_timeout
+                                                  and interface not in tx_warn_interfaces):
             log.warning(
                 'Tx - {} : previous packet sent at {}, packet not sent in last 2 timeout(2*{}s)'.format(
-                    interface.mac.replace(' ',':'), ts_to_str(interface.last_sent_time), interface.partner_timeout))
+                    interface.mac.replace(' ', ':'), ts_to_str(interface.last_sent_time), interface.partner_timeout))
+            tx_warn_interfaces.add(interface)
 
     for interface in to_be_removed:  # interfaces whose error is already reported are suspended temporarily from
         timer_list_remove(tx_timer_list, interface)         # checking timeout till new packet sent
@@ -46,15 +53,17 @@ def check_rx_time_out(current_time, interfaces):   # called to check timeout at 
             interface.mux_sm.actor_state['expired'] = 1
             interface.selected = 'UNSELECTED'
             log.error('Rx - {} : Actor state is Defaulted and selected is UNSELECTED'.format(
-                interface.mac.replace(' ',':')))
+                interface.mac.replace(' ', ':')))
             # assuming oper parameters are different from admin parameters
             interface.mux_sm.move_to_detached()      # changing MUX state
+            if interface in rx_warn_interfaces:
+                rx_warn_interfaces.remove(interface)
 
         elif (interface.last_received_time != 0) and (current_time-interface.last_received_time > 2*interface.actor_timeout
-                                                    and interface.Rx_warned is False):
+                                                    and interface not in rx_warn_interfaces):
             log.warning('Rx - {} : previous packet received at {}, packet not received in last 2 timeout(2*{}s)'.format(
                 interface.mac.replace(' ',':'), ts_to_str(interface.last_received_time), interface.actor_timeout))
-            interface.Rx_warned = True
+            rx_warn_interfaces.add(interface)
 
 
 def ts_to_str(ts):  # converts timestamp to string
@@ -141,7 +150,6 @@ def run_rx_sm(index, current_time_stamp, pkt, interfaces, detailed):
         return
 
     interface.mux_sm.actor_state['expired'] = 0
-    interface.Rx_warned = False
 
     if interface.mux_sm.actor_state['expired'] == 1:
         log.info('Rx - {} : MAC - {} : new packet received at {}'.format(LacPdu.pkt_info(pkt,index), interface.mac.replace(' ',':'),
@@ -178,6 +186,7 @@ def run_rx_tx_sm(index, pkt, current_time_stamp, interfaces, hostEthMacs, detail
     if LacPdu.is_of_interest(pkt, index, interfaces) is False:
         return
     log.debug('Analysis of {} starts here'.format(LacPdu.pkt_info(pkt, index)))
+
     if LacPdu.get_src_eth_mac(pkt) in hostEthMacs:
         run_tx_sm(index, current_time_stamp, pkt, interfaces, detailed)
     else:

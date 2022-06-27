@@ -17,9 +17,9 @@ class LacpNPA(NPA):
     def __init__(self):
         self.pcap_file = ''
         self.time_zone = ''
-        self.interfaces = []
+        self.interfaces = []    # list of objects of type LacpInterfaces
         self.detailed = False     # used in Rx_Tx machine packet jitter calculation
-        self.hosts = []
+        self.hosts = []         # list of tuples having each host information
 
     def take_input(self, cnfg):
         # cnfg format
@@ -40,8 +40,8 @@ class LacpNPA(NPA):
             self.time_zone = 'Asia/Kolkata'
         self.detailed = bool(int(cnfg[3][cnfg[3].rfind(' ')+1:-1]))  # 0 or 1 only
         interface_count = int(cnfg[4][cnfg[4].rfind(' ')+1:-1])
-        # host is tuple in format (mac, partnerMac, port, partnerPort)
-        self.hostEthMacs = []
+        # host is tuple, in format (mac, partnerMac, port, partnerPort)
+        self.hostEthMacs = []  # list of MAC IDs of hosts
 
         count = 0
         while count < interface_count:
@@ -91,7 +91,6 @@ class LacpNPA(NPA):
         for host in self.hosts:
             self.hostEthMacs.append(host[0])
 
-
     def run_analyzer(self, cnfg):
         self.take_input(cnfg)
         tz = pytz.timezone(self.time_zone)
@@ -113,6 +112,6 @@ class LacpNPA(NPA):
                     print("{ind:5d} packets processed".format(ind=index))
         print('All packets processed')
         print('Total', len(LacPdu.LACP_indices), 'LACP packets found out of', len(pkts), 'packets in pcap file')
-        log.debug('LACP indices are\n{}'.format(LacPdu.LACP_indices))
+        log.debug('LACP indices are\n{}'.format(LacPdu.LACP_indices))  # will be useful for post analysis
 
 
