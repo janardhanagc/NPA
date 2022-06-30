@@ -148,10 +148,11 @@ def run_timers(current_time, interfaces):
 # reports any changes in actor or partner information present among last two packet sent / received
 # it checks for system ID, priority, key, port, port priority of both actor and partner
 def detect_agent_info_changes(pkt_old, pkt_new, index, interface, direction):
-    if direction == 'sent':
-        agent = 'Actor'
-    else:
-        agent = 'Partner'
+    # if direction == 'sent':
+    #     agent = 'Actor'
+    # else:
+    #     agent = 'Partner'
+    agent = 'Actor'
     old_agent_info = LacPdu.get_info_of(agent, pkt_old)
     new_agent_info = LacPdu.get_info_of(agent, pkt_new)
     agent = agent + '_'  # to match with actual keys used in LacPDU

@@ -31,7 +31,6 @@ class LacpInterface(Interface):
         self.actor_timeout = 1
         self.partner_timeout = 1
         self.mux_sm = MuxMachine()
-        self.Rx_warned = False
         self.selected = 'UNSELECTED'
 
     # Return the interface from interfaces list which has same port number
