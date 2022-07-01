@@ -32,6 +32,8 @@ class LacpInterface(Interface):
         self.partner_timeout = 1
         self.mux_sm = MuxMachine()
         self.selected = 'UNSELECTED'
+        self.tx_timeout_buffer = -3
+        self.rx_timeout_buffer = -3
 
     # Return the interface from interfaces list which has same port number
     @staticmethod

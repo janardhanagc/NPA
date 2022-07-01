@@ -50,7 +50,7 @@ def filter_analysis(file, rule):
 file = sys.argv[1]
 job = sys.argv[2]
 rule = sys.argv[3]
-print('rule is ', rule)
+#print('rule is ', rule)
 if job == 'filter':
     rule = rule[1:-1]
     if rule.count(',') == 1:

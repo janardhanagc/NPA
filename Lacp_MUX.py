@@ -140,7 +140,7 @@ def run_timers(current_time, interfaces):
             interface.mux_sm.actor_state['synchronization'] = 1
             interface.mux_sm.wait_while_timer_stamp = 0
 
-        # partner_in_sync_timer of 25 second
+        # partner_in_sync_timer of 25 second ( not implemented )
 
     return
 
@@ -398,7 +398,7 @@ def run_mux_machine(index, pkt, pkt_time, hostEthMacs, interfaces):
             dependency_check(interface, pkt, index, 'received')
         if len(interface.last_pkt_rx) != 0:  # enters the if block if interface has received any packet before
             detect_agent_info_changes(interface.last_pkt_rx, pkt, index, interface, 'received')
-            interface.partner_state = partner_state
+        interface.mux_sm.partner_state = partner_state
 
         if interface.mux_sm.is_detached and interface.selected == 'SELECTED':
             log.info('{} : MAC - {} : Selected may be SELECTED or STANDBY, moving to waiting'.format(

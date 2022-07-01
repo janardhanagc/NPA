@@ -25,15 +25,17 @@ def timer_list_remove(timer_list, interface):
 def check_tx_time_out(current_time):  # called to check timeout at Tx
     to_be_removed = list()
     for interface in tx_timer_list:
-        if (interface.last_sent_time != 0) and (current_time-interface.last_sent_time > 3*interface.partner_timeout):
+        if (interface.last_sent_time != 0) and (interface.rx_timeout_buffer == 0 or interface.rx_timeout_buffer +3 < current_time)\
+                and (current_time - interface.last_sent_time > 3*interface.partner_timeout):
             log.error(
                 'Tx - {} : previous packet sent at {}, packet not sent in last 3 timeout(3*{}s)'.format(
                     interface.mac.replace(' ', ':'), ts_to_str(interface.last_sent_time), interface.partner_timeout))
+            interface.tx_timeout_buffer = 0
             to_be_removed.append(interface)
             if interface in tx_warn_interfaces:
                 tx_warn_interfaces.remove(interface)
-
-        elif (interface.last_sent_time != 0) and (current_time-interface.last_sent_time > 2*interface.partner_timeout
+        elif (interface.last_sent_time != 0) and (interface.rx_timeout_buffer == 0 or interface.rx_timeout_buffer +3 < current_time) and\
+                (current_time-interface.last_sent_time > 2*interface.partner_timeout
                                                   and interface not in tx_warn_interfaces):
             log.warning(
                 'Tx - {} : previous packet sent at {}, packet not sent in last 2 timeout(2*{}s)'.format(
@@ -47,7 +49,9 @@ def check_tx_time_out(current_time):  # called to check timeout at Tx
 def check_rx_time_out(current_time, interfaces):   # called to check timeout at Rx
     alive_interfaces = [interface for interface in interfaces if interface.mux_sm.actor_state['expired'] == 0]
     for interface in alive_interfaces:
-        if (interface.last_received_time != 0) and (current_time-interface.last_received_time > 3*interface.actor_timeout):
+        if (interface.last_received_time != 0 and (interface.tx_timeout_buffer == 0 or
+                interface.tx_timeout_buffer+3 < current_time )and current_time-interface.last_received_time > 3*interface.actor_timeout):
+            log.critical("current time is {} and buffer is {}".format(ts_to_str(float(current_time)),ts_to_str(float(interface.tx_timeout_buffer + 3))))
             log.error('Rx - {} : previous packet received at {}, packet not received in last 3 timeout(3*{})s'.format(
                 interface.mac.replace(' ',':'), ts_to_str(interface.last_received_time), interface.actor_timeout))
             interface.mux_sm.actor_state['expired'] = 1
@@ -58,8 +62,10 @@ def check_rx_time_out(current_time, interfaces):   # called to check timeout at 
             interface.mux_sm.move_to_detached()      # changing MUX state
             if interface in rx_warn_interfaces:
                 rx_warn_interfaces.remove(interface)
+            interface.rx_timeout_buffer = 0
 
-        elif (interface.last_received_time != 0) and (current_time-interface.last_received_time > 2*interface.actor_timeout
+        elif (interface.last_received_time != 0 and (interface.tx_timeout_buffer == 0 or
+                interface.tx_timeout_buffer+3 < current_time ) and current_time -interface.last_received_time > 2*interface.actor_timeout
                                                     and interface not in rx_warn_interfaces):
             log.warning('Rx - {} : previous packet received at {}, packet not received in last 2 timeout(2*{}s)'.format(
                 interface.mac.replace(' ',':'), ts_to_str(interface.last_received_time), interface.actor_timeout))
@@ -79,6 +85,7 @@ def run_tx_sm(index, current_time_stamp, pkt, interfaces, detailed):
     interface = Interface.find_interface_from_mac(interfaces, actor_mac)
     if interface:
         # check if this is first packet seen in pcap
+        interface.tx_timeout_buffer = -3
         if interface.last_sent_time == 0:
             actor_port = LacPdu.get_PDU(pkt)['Actor_port']
             if interface.port != " " and interface.port != actor_port:
@@ -117,6 +124,13 @@ def run_tx_sm(index, current_time_stamp, pkt, interfaces, detailed):
             log.info('{} : MAC - {} : expected time_out - {}, actual sent is {}'.format(LacPdu.pkt_info(pkt, index),
                             interface.mac.replace(" ",":"), LacPdu.state_values['time_out'][interface.mux_sm.actor_state['time_out']],
                                                             LacPdu.state_values['time_out'][time_out]))
+
+        if interface.mux_sm.actor_state['time_out'] == 0 and time_out == 1:
+            interface.tx_timeout_buffer = current_time_stamp
+            log.critical("buffering {}".format(ts_to_str(interface.tx_timeout_buffer)))
+
+
+
         interface.mux_sm.actor_state['time_out'] = time_out
         interface.actor_timeout = periodic[list(periodic.keys())[time_out]]
         interface.last_sent_time = current_time_stamp
@@ -136,6 +150,9 @@ def run_rx_sm(index, current_time_stamp, pkt, interfaces, detailed):
         log.error('Rx - {} : Packet received, but actor cannot be mapped at this instant, packet ignored'.
                   format(LacPdu.pkt_info(pkt, index)))
         return
+
+    interface.tx_timeout_buffer = -3
+
     if interface.last_received_time == 0:
         log.info(
                 'Rx - {} : MAC - {} : 1st packet received at {}'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'),
@@ -173,6 +190,10 @@ def run_rx_sm(index, current_time_stamp, pkt, interfaces, detailed):
     else:
         log.info('Rx - {} : MAC - {} : received packet at {}'.format(LacPdu.pkt_info(pkt, index), interface.mac.replace(' ',':'),
                                                                      ts_to_str(current_time_stamp)))
+
+    log.critical("".format(interface.mux_sm.partner_state))
+    if interface.mux_sm.partner_state['time_out'] == 0 and time_out == 1:
+        interface.rx_timeout_buffer = current_time_stamp
     interface.mux_sm.partner_state['time_out'] = time_out
     interface.partner_timeout = periodic[list(periodic.keys())[time_out]]
     interface.last_received_time = current_time_stamp
